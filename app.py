@@ -42,7 +42,7 @@ class GNI(BaseModel):
 
 db.connect()  # Connect to the database
 db.drop_tables([Countries, GDP, GNI])
-db.create_tables([Countries, GDP, GNI], safe=True)  # Create the Person table
+db.create_tables([Countries, GDP, GNI], safe = True)  # Create the Person table
 
 
 # Grab the data from WB
@@ -81,6 +81,22 @@ gni_instance()
 app = Flask(__name__)
 
 
+# Define the route '/economy'
+@app.route('/economy', methods = ['GET'])
+@app.route('/economy/<string:country>', methods = ['GET'])
+def economy(country = None):
+    if country:
+        result = []
+        for x in Countries.select().where(Countries.country_code == country):
+            result.append(model_to_dict(x))
+        return jsonify(result)
+    else:
+        result = []
+        for x in Countries.select():
+            result.append(model_to_dict(x))
+        return jsonify(result)
+
+
 # Define a '/gdp' endpoint that accepts GET requests
 @app.route('/gdp', methods = ['GET'])
 @app.route('/gdp/<string:param>', methods = ['GET'])
@@ -100,6 +116,27 @@ def gdp(param = None):
         for x in GDP.select():
             gdp.append(model_to_dict(x))
         return jsonify(gdp)
+
+
+# Define a '/gdp' endpoint that accepts GET requests
+@app.route('/gni', methods = ['GET'])
+@app.route('/gni/<string:var>', methods = ['GET'])
+def gni(var = None):
+    if var:
+        while var.isdigit():
+            gni = GNI.get(GDP.id == var)
+            gni = model_to_dict(gni)
+            return jsonify(gni)
+        while var.isalpha():
+            gni = []
+            for x in GNI.select().where(GNI.country_code == var):
+                gni.append(model_to_dict(x))
+            return jsonify(gni)
+    else:
+        gni = []
+        for x in GNI.select():
+            gni.append(model_to_dict(x))
+        return jsonify(gni)
 
 
 # Start server, listen on port 9000 and re-start server on file change
