@@ -9,6 +9,7 @@ peewee = "*"
 wbgapi = "*"
 psycopg2 = "*"
 psycopg2-binary = "*"
+jsonify = "*"
 
 [dev-packages]
 

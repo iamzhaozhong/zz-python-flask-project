@@ -10,7 +10,8 @@ from playhouse.shortcuts import model_to_dict  # Convert Peewee Model to Diction
 # Create our database object for Python
 # Assumes we have a database called 'people' and a user named 'postgres'
 db = PostgresqlDatabase('python_flask_project', user = 'zhaozhong', password = '', host = 'localhost', port = 5432)
-
+# conn = psycopg2.connect(database = 'python_flask_project', user = 'zhaozhong', password = '', host = 'localhost',
+#                         port = 5432)
 
 # Base model that all models will extend from that establishes relationship to database
 class BaseModel(Model):
@@ -29,7 +30,7 @@ class Countries(BaseModel):
 class GDP(BaseModel):
     value_in_USD = FloatField(null = True)
     series = CharField()
-    country_code = CharField()
+    country_code = CharField(null = True)
     fiscal_year = CharField()
 
 
@@ -80,3 +81,22 @@ gdp_instance()
 gni_instance()
 
 app = Flask(__name__)
+
+
+# Define a '/gdp' endpoint that accepts GET requests
+@app.route('/gdp', methods = ['GET'])
+@app.route('/gdp/<id>', methods = ['GET'])
+def gdp(id = None):
+    if id:
+        gdp = GDP.get(GDP.id == id)
+        gdp = model_to_dict(gdp)
+        return jsonify(gdp)
+    else:
+        gdp = []
+        for x in GDP.select():
+            gdp.append(model_to_dict(x))
+        return jsonify(gdp)
+
+
+# Start server, listen on port 9000 and re-start server on file change
+app.run(port = 9000)
