@@ -32,7 +32,7 @@ class GDP(BaseModel):
     fiscal_year = CharField()
 
 
-# Gross National Income Per Capita
+# Gross National Income PCAP
 class GNI(BaseModel):
     value_in_USD = FloatField(null = True)
     series = CharField()
@@ -103,4 +103,4 @@ def gdp(param = None):
 
 
 # Start server, listen on port 9000 and re-start server on file change
-app.run(port = 9000)
+app.run(port = 9000, debug = True)
