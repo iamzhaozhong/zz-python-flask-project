@@ -10,8 +10,7 @@ from playhouse.shortcuts import model_to_dict  # Convert Peewee Model to Diction
 # Create our database object for Python
 # Assumes we have a database called 'people' and a user named 'postgres'
 db = PostgresqlDatabase('python_flask_project', user = 'zhaozhong', password = '', host = 'localhost', port = 5432)
-# conn = psycopg2.connect(database = 'python_flask_project', user = 'zhaozhong', password = '', host = 'localhost',
-#                         port = 5432)
+
 
 # Base model that all models will extend from that establishes relationship to database
 class BaseModel(Model):
@@ -19,7 +18,6 @@ class BaseModel(Model):
         database = db
 
 
-# Our Person model, has two fields: first and last name, that are type "CharField"
 class Countries(BaseModel):
     country_code = CharField()
     country_name = CharField()
@@ -44,7 +42,7 @@ class GNI(BaseModel):
 
 db.connect()  # Connect to the database
 db.drop_tables([Countries, GDP, GNI])
-db.create_tables([Countries, GDP, GNI])  # Create the Person table
+db.create_tables([Countries, GDP, GNI], safe=True)  # Create the Person table
 
 
 # Grab the data from WB
@@ -85,12 +83,18 @@ app = Flask(__name__)
 
 # Define a '/gdp' endpoint that accepts GET requests
 @app.route('/gdp', methods = ['GET'])
-@app.route('/gdp/<id>', methods = ['GET'])
-def gdp(id = None):
-    if id:
-        gdp = GDP.get(GDP.id == id)
-        gdp = model_to_dict(gdp)
-        return jsonify(gdp)
+@app.route('/gdp/<string:param>', methods = ['GET'])
+def gdp(param = None):
+    if param:
+        while param.isdigit():
+            gdp = GDP.get(GDP.id == param)
+            gdp = model_to_dict(gdp)
+            return jsonify(gdp)
+        while param.isalpha():
+            gdp = []
+            for x in GDP.select().where(GDP.country_code == param):
+                gdp.append(model_to_dict(x))
+            return jsonify(gdp)
     else:
         gdp = []
         for x in GDP.select():
